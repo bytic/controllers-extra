@@ -2,8 +2,6 @@
 
 namespace ByTIC\Controllers\Behaviors;
 
-use ByTIC\Common\Records\Traits\HasStatus\RecordsTrait;
-use ByTIC\Common\Records\Traits\HasStatus\RecordTrait;
 use Nip\Records\AbstractModels\Record;
 use Nip\Records\AbstractModels\RecordManager;
 

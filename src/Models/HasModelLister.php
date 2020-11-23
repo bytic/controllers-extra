@@ -45,7 +45,6 @@ trait HasModelLister
 
         $this->getView()->Paginator()->setPaginator($this->getRecordPaginator());
         $this->getView()->Paginator()->setURL($this->getModelManager()->getURL(is_object($filters) ? $filters->toArray() : $filters));
-
 //        if ($pageNumber * $itemsPerPage < $this->recordLimit) {
 //        } else {
 //            $this->getView()->set('recordLimit', true);

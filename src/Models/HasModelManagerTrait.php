@@ -2,7 +2,7 @@
 
 namespace ByTIC\Controllers\Behaviors\Models;
 
-use Nip\Logger\Exception;
+use Exception;
 use Nip\Records\AbstractModels\RecordManager;
 use Nip\Records\Locator\ModelLocator;
 

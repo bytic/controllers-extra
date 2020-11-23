@@ -31,7 +31,9 @@
     "mockery/mockery": "^1.0",
     "bytic/dispatcher": "^0.9|^1.0",
     "bytic/orm": "^0.9|^1.0",
+    "bytic/models-smart-properties": "^0.9|^1.0",
     "bytic/http": "^0.9|^1.0",
+    "bytic/form": "^0.9|^1.0",
     "bytic/view": "^0.9|^1.0"
   }
 }

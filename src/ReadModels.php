@@ -25,6 +25,7 @@ use Nip_Form as Form;
 trait ReadModels
 {
     use HasRecordPaginator;
+    use Models\HasModelLister;
 
     protected $urls = [];
 
@@ -40,69 +41,6 @@ trait ReadModels
         $item = $this->getViewItemFromRequest();
         $this->getView()->set('item', $item);
         $this->getView()->Meta()->prependTitle($item->getName());
-    }
-
-    protected function doModelsListing()
-    {
-        $query = $this->newIndexQuery();
-        $filters = $this->getRequestFilters();
-        $query = $this->getModelManager()->filter($query, $filters);
-
-        $pageNumber = intval($_GET['page']);
-        $itemsPerPage = $this->getRecordPaginator()->getItemsPerPage();
-
-        if ($pageNumber * $itemsPerPage < $this->recordLimit) {
-            $this->getRecordPaginator()->setPage($pageNumber);
-            $this->getRecordPaginator()->paginate($query);
-
-            $items = $this->indexFindItems($query);
-            $this->indexPrepareItems($items);
-
-            $this->getView()->set('filters', $filters);
-            $this->getView()->set('title', $this->getModelManager()->getLabel('title'));
-
-            $this->getView()->Paginator()->setPaginator($this->getRecordPaginator());
-            $this->getView()->Paginator()->setURL($this->getModelManager()->getURL($filters));
-        } else {
-            $this->getView()->set('recordLimit', true);
-        }
-    }
-
-    /**
-     * @return \Nip\Database\Query\Select
-     */
-    protected function newIndexQuery()
-    {
-        return $this->getModelManager()->paramsToQuery();
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getRequestFilters()
-    {
-        return $this->getModelManager()->requestFilters($this->getRequest());
-    }
-
-    /**
-     * @param SelectQuery $query
-     * @return Collection
-     */
-    protected function indexFindItems($query)
-    {
-        $items = $this->getModelManager()->findByQuery($query);
-        $this->getRecordPaginator()->count();
-
-        $this->getView()->set('items', $items);
-
-        return $items;
-    }
-
-    /**
-     * @param Collection $items
-     */
-    protected function indexPrepareItems($items)
-    {
     }
 
     /**
@@ -125,13 +63,6 @@ trait ReadModels
         parent::afterAction();
     }
 
-    protected function initViewModelManager()
-    {
-        if (!$this->getView()->has('modelManager')) {
-            $this->getView()->set('modelManager', $this->getModelManager());
-        }
-    }
-
     protected function setBreadcrumbs()
     {
         parent::setBreadcrumbs();
@@ -141,7 +72,7 @@ trait ReadModels
     /**
      * @param bool $parent
      */
-    protected function setClassBreadcrumbs($parent = false)
+    public function setClassBreadcrumbs($parent = false)
     {
         $this->getView()->Breadcrumbs()->addItem(
             $this->getModelManager()->getLabel('title'),
@@ -153,7 +84,7 @@ trait ReadModels
     /**
      * @param bool|Record $item
      */
-    protected function setItemBreadcrumbs($item = false)
+    public function setItemBreadcrumbs($item = false)
     {
         $item = $item ? $item : $this->item;
         $this->getView()->Breadcrumbs()->addItem($item->getName(), $item->getURL());

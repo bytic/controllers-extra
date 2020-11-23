@@ -29,15 +29,15 @@ trait PageTrait
     /**
      * @return View
      */
-    public abstract function getView();
+    abstract public function getView();
 
     protected function setBreadcrumbs()
     {
-        $this->getView()->Breadcrumbs()->addItem("Home", BASE_URL);
+        $this->getView()->Breadcrumbs()->addItem("Home", app('url')->to('/'));
     }
 
     /**
      * @return View
      */
-    protected abstract function getViewObject();
+    abstract protected function getViewObject();
 }

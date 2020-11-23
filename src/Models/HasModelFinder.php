@@ -113,6 +113,7 @@ trait HasModelFinder
         } else {
             $value = $request[$urlKey];
         }
+
         $value = clean($value);
 
         return $value;
@@ -172,7 +173,8 @@ trait HasModelFinder
      */
     protected function getRequestKeyFromString($name)
     {
-        return 'model-'.$name;
+        $name = strtolower($name);
+        return 'model-' . $name;
     }
 
     /**

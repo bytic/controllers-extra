@@ -5,6 +5,10 @@ namespace ByTIC\Controllers\Behaviors;
 use ByTIC\Common\Records\Traits\HasForms\RecordTrait as HasFormsRecord;
 use Nip_Form_Model as Form;
 
+/**
+ * Trait HasForms
+ * @package ByTIC\Controllers\Behaviors
+ */
 trait HasForms
 {
 

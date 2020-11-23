@@ -2,6 +2,8 @@
 
 namespace ByTIC\Controllers\Behaviors\Async;
 
+use Nip\Http\Response\JsonResponse;
+
 /**
  * Class ResponseTrait
  * @package ByTIC\Controllers\Behaviors\Async
@@ -85,8 +87,8 @@ trait ResponseTrait
 
     protected function outputJSON()
     {
-        header("Content-type: text/x-json");
-        echo(json_encode($this->response_values));
+        $this->setResponse(new JsonResponse($this->response_values));
+        $this->getResponse()->send();
     }
 
     protected function outputTXT()

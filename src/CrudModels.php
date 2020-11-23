@@ -3,6 +3,7 @@
 namespace ByTIC\Controllers\Behaviors;
 
 use ByTIC\Common\Records\Traits\Media\Files\RecordTrait as HasFilesRecordTrait;
+use ByTIC\Controllers\Behaviors\Models\HasModelLister;
 use Nip\Records\AbstractModels\Record;
 use Nip\Records\AbstractModels\RecordManager;
 use Nip\Request;
@@ -24,33 +25,56 @@ use Nip_Form_Model as Form;
 trait CrudModels
 {
     use HasRecordPaginator;
+    use HasModelLister;
 
     protected $_urls = [];
     protected $_flash = [];
 
+    /**
+     * @deprecated variable
+     * @var null
+     */
+    protected $query = null;
+
+    /**
+     * @deprecated variable
+     * @var null
+     */
+    protected $filters = null;
+
+    /**
+     * @deprecated variable
+     * @var null
+     */
+    protected $items = null;
+
+    /**
+     * @deprecated variable
+     * @var null
+     */
+    protected $item = null;
+
+    /**
+     * @deprecated variable
+     * @var null
+     */
+    protected $form = null;
+
+    /**
+     * Model index action / listing
+     *
+     * @return void
+     */
     public function index()
     {
-        $query = isset($this->query) ? $this->query : $this->newIndexQuery();
-        $filters = isset($this->filters) ? $this->filters : $this->getRequestFilters();
-        $query = $this->getModelManager()->filter($query, $filters);
-
-        $this->prepareRecordPaginator();
-        $paginator = $this->getRecordPaginator();
-        $paginator->paginate($query);
-
-        if (isset($this->items)) {
-            $items = $this->items;
-        } else {
-            $items = $this->getModelManager()->findByQuery($query);
-        }
-
-        $this->getView()->set('items', $items);
-        $this->getView()->set('filters', $filters);
-        $this->getView()->set('title', $this->getModelManager()->getLabel('title'));
-
-        $this->getView()->Paginator()->setPaginator($paginator)->setURL($this->getModelManager()->getURL());
+        $this->doModelsListing();
     }
 
+    /**
+     * Add item method
+     *
+     * @return void
+     */
     public function add()
     {
         $record = $this->addNewModel();
@@ -64,13 +88,15 @@ trait CrudModels
         $this->getView()->set('form', $form);
         $this->getView()->set('title', $this->getModelManager()->getLabel('add'));
 
-        $this->getView()->Breadcrumbs()->addItem($this->getModelManager()->getLabel('add'));
+        $this->getView()->Breadcrumbs()
+            ->addItem($this->getModelManager()->getLabel('add'));
+
         $this->getView()->TinyMCE()->setEnabled();
         $this->getView()->append('section', '.add');
     }
 
     /**
-     * @return \Nip\Records\AbstractModels\Record
+     * @return \ByTIC\Common\Records\Record
      */
     public function addNewModel()
     {
@@ -109,8 +135,9 @@ trait CrudModels
      */
     public function addRedirect($item)
     {
-        $url = isset($this->_urls["after-add"]) ? $this->_urls['after-add'] : $item->getURL();
-        $flashName = isset($this->_flash["after-add"]) ? $this->_flash['after-add'] : $this->getModelManager()->getController();
+        $url = $this->_urls["after-add"] ? $this->_urls['after-add'] : $item->getURL();
+        $flashName = $this->_flash["after-add"] ? $this->_flash['after-add'] : $this->getModelManager()->getController(
+        );
 
         return $this->flashRedirect($this->getModelManager()->getMessage('add'), $url, 'success', $flashName);
     }
@@ -136,6 +163,85 @@ trait CrudModels
         $this->postView();
     }
 
+    /**
+     * @return Record|HasFilesRecordTrait
+     */
+    protected function initExistingItem()
+    {
+        if (!$this->item) {
+            $this->item = $this->getModelFromRequest();
+        }
+
+        return $this->item;
+    }
+
+    /**
+     * @param Form $form
+     */
+    protected function processForm($form)
+    {
+        if ($form->execute()) {
+            $this->viewRedirect($form->getModel());
+        }
+    }
+
+    /**
+     * @param Record|boolean $item
+     */
+    protected function viewRedirect($item = null)
+    {
+        if ($item == null) {
+            $item = $this->getModelFromRequest();
+            trigger_error('$item needed in viewRedirect', E_USER_DEPRECATED);
+        }
+
+        $url = $this->getAfterUrl('after-edit', $item->getURL());
+        $flashName = $this->getAfterFlashName("after-edit", $this->getModelManager()->getController());
+
+        $this->flashRedirect(
+            $this->getModelManager()->getMessage('update'),
+            $url,
+            'success',
+            $flashName
+        );
+    }
+
+    /**
+     * @param string $key
+     * @param string|null $default
+     * @return string
+     */
+    protected function getAfterUrl($key, $default = null)
+    {
+        return isset($this->_urls[$key]) && $this->_urls[$key] ? $this->_urls[$key] : $default;
+    }
+
+    /**
+     * @param string $key
+     * @param string|null $default
+     * @return string
+     */
+    protected function getAfterFlashName($key, $default = null)
+    {
+        return isset($this->_flash[$key]) && $this->_flash[$key] ? $this->_flash[$key] : $default;
+    }
+
+    /**
+     * @param bool|Record $item
+     */
+    public function setItemBreadcrumbs($item = false)
+    {
+        $item = $item ? $item : $this->getModelFromRequest();
+        $this->getView()->Breadcrumbs()->addItem($item->getName(), $item->getURL());
+
+        $this->getView()->Meta()->prependTitle($item->getName());
+    }
+
+    protected function postView()
+    {
+        $this->setItemBreadcrumbs();
+    }
+
     public function edit()
     {
         $record = $this->initExistingItem();
@@ -156,15 +262,33 @@ trait CrudModels
         $this->setItemBreadcrumbs();
     }
 
+    /**
+     * Duplicate item action
+     *
+     * @return void
+     */
     public function duplicate()
     {
         $record = $this->initExistingItem();
 
         $record->duplicate();
 
-        $url = $this->getAfterUrl("after-duplicate", $this->getModelManager()->getURL());
-        $flashName = $this->getAfterFlashName("after-duplicate", $this->getModelManager()->getController());
-        $this->flashRedirect($this->getModelManager()->getMessage('duplicate'), $url, 'success', $flashName);
+        $url = $this->getAfterUrl(
+            "after-duplicate",
+            $this->getModelManager()->getURL()
+        );
+
+        $flashName = $this->getAfterFlashName(
+            "after-duplicate",
+            $this->getModelManager()->getController()
+        );
+
+        $this->flashRedirect(
+            $this->getModelManager()->getMessage('duplicate'),
+            $url,
+            'success',
+            $flashName
+        );
     }
 
     public function delete()
@@ -173,6 +297,13 @@ trait CrudModels
 
         $item->delete();
         $this->deleteRedirect();
+    }
+
+    protected function deleteRedirect()
+    {
+        $url = $this->getAfterUrl("after-delete", $this->getModelManager()->getURL());
+        $flashName = $this->getAfterFlashName("after-delete", $this->getModelManager()->getController());
+        $this->flashRedirect($this->getModelManager()->getMessage('delete'), $url, 'success', $flashName);
     }
 
     public function activate()
@@ -215,11 +346,13 @@ trait CrudModels
             $item->getFromRequest($_POST, [$field]);
             if ($item->validate()) {
                 $item->save();
-                $item->Async()->json([
-                    "type" => "success",
-                    "value" => $item->$field,
-                    "message" => $this->getModelManager()->getMessage("update"),
-                ]);
+                $item->Async()->json(
+                    [
+                        "type" => "success",
+                        "value" => $item->$field,
+                        "message" => $this->getModelManager()->getMessage("update"),
+                    ]
+                );
             }
         }
 
@@ -255,91 +388,11 @@ trait CrudModels
     }
 
     /**
-     * @return Record|HasFilesRecordTrait
-     */
-    protected function initExistingItem()
-    {
-        if (!isset($this->item)) {
-            $this->item = $this->getModelFromRequest();
-        }
-
-        return $this->item;
-    }
-
-    /**
-     * @param Form $form
-     */
-    protected function processForm($form)
-    {
-        if ($form->execute()) {
-            $this->viewRedirect($form->getModel());
-        }
-    }
-
-    /**
-     * @param Record|boolean $item
-     */
-    protected function viewRedirect($item = null)
-    {
-        if ($item == null) {
-            $item = $this->getModelFromRequest();
-            trigger_error('$item needed in viewRedirect', E_USER_DEPRECATED);
-        }
-
-        $url = $this->getAfterUrl('after-edit', $item->getURL());
-        $flashName = $this->getAfterFlashName("after-edit", $this->getModelManager()->getController());
-        $this->flashRedirect($this->getModelManager()->getMessage('update'), $url, 'success', $flashName);
-    }
-
-    /**
-     * @param string $key
-     * @param string|null $default
-     * @return string
-     */
-    protected function getAfterUrl($key, $default = null)
-    {
-        return isset($this->_urls[$key]) && $this->_urls[$key] ? $this->_urls[$key] : $default;
-    }
-
-    /**
-     * @param string $key
-     * @param string|null $default
-     * @return string
-     */
-    protected function getAfterFlashName($key, $default = null)
-    {
-        return isset($this->_flash[$key]) && $this->_flash[$key] ? $this->_flash[$key] : $default;
-    }
-
-    /**
-     * @param bool|Record $item
-     */
-    protected function setItemBreadcrumbs($item = false)
-    {
-        $item = $item ? $item : $this->getModelFromRequest();
-        $this->getView()->Breadcrumbs()->addItem($item->getName(), $item->getURL());
-
-        $this->getView()->Meta()->prependTitle($item->getName());
-    }
-
-    protected function postView()
-    {
-        $this->setItemBreadcrumbs();
-    }
-
-    /**
      * @deprecated Use new processForm($form)
      */
     protected function processView()
     {
         $this->processForm($this->form);
-    }
-
-    protected function deleteRedirect()
-    {
-        $url = $this->getAfterUrl("after-delete", $this->getModelManager()->getURL());
-        $flashName = $this->getAfterFlashName("after-delete", $this->getModelManager()->getController());
-        $this->flashRedirect($this->getModelManager()->getMessage('delete'), $url, 'success', $flashName);
     }
 
     protected function beforeAction()
@@ -359,7 +412,7 @@ trait CrudModels
     /**
      * @param bool $parent
      */
-    protected function setClassBreadcrumbs($parent = false)
+    public function setClassBreadcrumbs($parent = false)
     {
         $this->getView()->Breadcrumbs()->addItem(
             $this->getModelManager()->getLabel('title'),
