@@ -135,8 +135,8 @@ trait CrudModels
      */
     public function addRedirect($item)
     {
-        $url = $this->_urls["after-add"] ? $this->_urls['after-add'] : $item->getURL();
-        $flashName = $this->_flash["after-add"] ? $this->_flash['after-add'] : $this->getModelManager()->getController(
+        $url = isset($this->_urls["after-add"]) ? $this->_urls['after-add'] : $item->getURL();
+        $flashName = isset($this->_flash["after-add"]) ? $this->_flash['after-add'] : $this->getModelManager()->getController(
         );
 
         return $this->flashRedirect($this->getModelManager()->getMessage('add'), $url, 'success', $flashName);
