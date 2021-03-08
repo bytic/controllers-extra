@@ -3,7 +3,6 @@
 namespace ByTIC\Controllers\Behaviors;
 
 use ByTIC\Common\Records\Traits\Media\Files\RecordTrait as HasFilesRecordTrait;
-use ByTIC\Controllers\Behaviors\Models\HasModelLister;
 use Nip\Records\AbstractModels\Record;
 use Nip\Records\AbstractModels\RecordManager;
 use Nip\Request;
@@ -25,10 +24,8 @@ use Nip_Form_Model as Form;
 trait CrudModels
 {
     use HasRecordPaginator;
-    use HasModelLister;
-
-    protected $_urls = [];
-    protected $_flash = [];
+    use Models\HasModelLister;
+    use Models\HasAfterActions;
 
     /**
      * @deprecated variable
@@ -129,19 +126,6 @@ trait CrudModels
         return $form;
     }
 
-    /**
-     * @param Record $item
-     * @return mixed
-     */
-    public function addRedirect($item)
-    {
-        $url = isset($this->_urls["after-add"]) ? $this->_urls['after-add'] : $item->getURL();
-        $flashName = isset($this->_flash["after-add"]) ? $this->_flash['after-add'] : $this->getModelManager()->getController(
-        );
-
-        return $this->flashRedirect($this->getModelManager()->getMessage('add'), $url, 'success', $flashName);
-    }
-
     public function view()
     {
         $record = $this->initExistingItem();
@@ -183,47 +167,6 @@ trait CrudModels
         if ($form->execute()) {
             $this->viewRedirect($form->getModel());
         }
-    }
-
-    /**
-     * @param Record|boolean $item
-     */
-    protected function viewRedirect($item = null)
-    {
-        if ($item == null) {
-            $item = $this->getModelFromRequest();
-            trigger_error('$item needed in viewRedirect', E_USER_DEPRECATED);
-        }
-
-        $url = $this->getAfterUrl('after-edit', $item->getURL());
-        $flashName = $this->getAfterFlashName("after-edit", $this->getModelManager()->getController());
-
-        $this->flashRedirect(
-            $this->getModelManager()->getMessage('update'),
-            $url,
-            'success',
-            $flashName
-        );
-    }
-
-    /**
-     * @param string $key
-     * @param string|null $default
-     * @return string
-     */
-    protected function getAfterUrl($key, $default = null)
-    {
-        return isset($this->_urls[$key]) && $this->_urls[$key] ? $this->_urls[$key] : $default;
-    }
-
-    /**
-     * @param string $key
-     * @param string|null $default
-     * @return string
-     */
-    protected function getAfterFlashName($key, $default = null)
-    {
-        return isset($this->_flash[$key]) && $this->_flash[$key] ? $this->_flash[$key] : $default;
     }
 
     /**
@@ -269,26 +212,10 @@ trait CrudModels
      */
     public function duplicate()
     {
-        $record = $this->initExistingItem();
+        $item = $this->initExistingItem();
 
-        $record->duplicate();
-
-        $url = $this->getAfterUrl(
-            "after-duplicate",
-            $this->getModelManager()->getURL()
-        );
-
-        $flashName = $this->getAfterFlashName(
-            "after-duplicate",
-            $this->getModelManager()->getController()
-        );
-
-        $this->flashRedirect(
-            $this->getModelManager()->getMessage('duplicate'),
-            $url,
-            'success',
-            $flashName
-        );
+        $item->duplicate();
+        $this->duplicateRedirect($item);
     }
 
     public function delete()
@@ -296,38 +223,23 @@ trait CrudModels
         $item = $this->initExistingItem();
 
         $item->delete();
-        $this->deleteRedirect();
-    }
-
-    protected function deleteRedirect()
-    {
-        $url = $this->getAfterUrl("after-delete", $this->getModelManager()->getURL());
-        $flashName = $this->getAfterFlashName("after-delete", $this->getModelManager()->getController());
-        $this->flashRedirect($this->getModelManager()->getMessage('delete'), $url, 'success', $flashName);
+        $this->deleteRedirect($item);
     }
 
     public function activate()
     {
-        $record = $this->initExistingItem();
+        $item = $this->initExistingItem();
 
-        $record->activate();
-
-        $this->flashRedirect(
-            $this->getModelManager()->getMessage('activate'),
-            $record->getURL()
-        );
+        $item->activate();
+        $this->afterActionRedirect('activate', $item);
     }
 
     public function deactivate()
     {
-        $record = $this->initExistingItem();
+        $item = $this->initExistingItem();
 
-        $record->deactivate();
-
-        $this->flashRedirect(
-            $this->getModelManager()->getMessage('deactivate'),
-            $record->getURL()
-        );
+        $item->deactivate();
+        $this->afterActionRedirect('deactivate', $item);
     }
 
     public function inplace()
