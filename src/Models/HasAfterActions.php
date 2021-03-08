@@ -62,7 +62,7 @@ trait HasAfterActions
         $url = $this->getAfterUrl($action_name, $item->getURL());
         $flash_name = $this->getAfterFlashName($action_name, $this->getModelManager()->getController());
 
-        return $this->flashRedirect($this->getModelManager()->getMessage('add'), $url, 'success', $flash_name);
+        return $this->flashRedirect($this->getModelManager()->getMessage($type), $url, 'success', $flash_name);
     }
 
     /**
