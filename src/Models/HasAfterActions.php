@@ -10,6 +10,12 @@ use Nip\Records\AbstractModels\Record;
  */
 trait HasAfterActions
 {
+    protected $afterActionsTypes = [
+        'after-add',
+        'after-edit',
+        'after-delete',
+    ];
+
     protected $_urls = [];
     protected $_flash = [];
 
@@ -58,7 +64,7 @@ trait HasAfterActions
         }
 
         $action_name = 'after-' . $type;
-
+        
         $url = $this->getAfterUrl($action_name, $item->getURL());
         $flash_name = $this->getAfterFlashName($action_name, $this->getModelManager()->getController());
 
@@ -73,6 +79,19 @@ trait HasAfterActions
     protected function getAfterUrl($key, $default = null)
     {
         return isset($this->_urls[$key]) && $this->_urls[$key] ? $this->_urls[$key] : $default;
+    }
+
+    /**
+     * @param string $url
+     * @param string $flash
+     */
+    protected function setAfterUrlFlash($url, $flash, $types = null)
+    {
+        $types = $types ? $types : $this->afterActionsTypes;
+        foreach ($types as $type) {
+            $this->setAfterUrl($type, $url);
+            $this->setAfterFlashName($type, $flash);
+        }
     }
 
     /**
