@@ -22,8 +22,8 @@
     }
   },
   "require": {
-    "php": "^7.2",
-    "bytic/controllers": "^0.9|^1.0",
+    "php": ">=7.2",
+    "bytic/controllers": "^1.0",
     "bytic/utility": "^1.0"
   },
   "require-dev": {
