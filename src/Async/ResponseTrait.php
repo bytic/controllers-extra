@@ -10,7 +10,6 @@ use Nip\Http\Response\JsonResponse;
  */
 trait ResponseTrait
 {
-
     /**
      * @var array
      */

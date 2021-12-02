@@ -18,15 +18,16 @@ use Nip\View;
  */
 trait HasSmartProperty
 {
-
     /**
      * @param $name
      */
     public function initViewProperty($name)
     {
         $definitionName = $this->getSmartPropertyDefinitionName($name);
-        $this->getView()->set(inflector()->pluralize($name),
-            $this->getModelManager()->getSmartPropertyItems($definitionName));
+        $this->getView()->set(
+            inflector()->pluralize($name),
+            $this->getModelManager()->getSmartPropertyItems($definitionName)
+        );
     }
 
     protected function getSmartPropertyDefinitionName($name)
@@ -58,8 +59,11 @@ trait HasSmartProperty
             $this->changeSmartPropertyRedirect($name, $item);
         } else {
             $redirect = $_SERVER['HTTP_REFERER'];
-            $this->flashRedirect($this->getModelManager()->getMessage(inflector()->pluralize($name).'.invalid-value'),
-                $redirect, 'error');
+            $this->flashRedirect(
+                $this->getModelManager()->getMessage(inflector()->pluralize($name) . '.invalid-value'),
+                $redirect,
+                'error'
+            );
         }
     }
 
@@ -70,7 +74,7 @@ trait HasSmartProperty
     public function changeSmartPropertyRedirect($name, $item)
     {
         $redirect = $_SERVER['HTTP_REFERER'] ? $_SERVER['HTTP_REFERER'] : $item->getURL();
-        $this->flashRedirect($this->getModelManager()->getMessage(inflector()->pluralize($name).'.success'), $redirect);
+        $this->flashRedirect($this->getModelManager()->getMessage(inflector()->pluralize($name) . '.success'), $redirect);
     }
 
     /**
