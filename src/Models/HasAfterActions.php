@@ -64,7 +64,7 @@ trait HasAfterActions
         }
 
         $action_name = 'after-' . $type;
-        
+
         $url = $this->getAfterUrl($action_name, $item->getURL());
         $flash_name = $this->getAfterFlashName($action_name, $this->getModelManager()->getController());
 

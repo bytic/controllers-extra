@@ -21,7 +21,7 @@ trait HasModelFinder
      */
     public function getModelFromRequest($key = false)
     {
-        $requestKey = 'model-'.$this->getModelManager()->getTable();
+        $requestKey = 'model-' . $this->getModelManager()->getTable();
         if ($this->getRequest()->attributes->has($requestKey) === false) {
             $this->initModelFromRequest($key);
         }

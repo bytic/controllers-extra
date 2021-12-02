@@ -29,7 +29,7 @@ trait HasModels
      */
     public function getModelNamespace()
     {
-        return $this->getRootNamespace().'Models\\';
+        return $this->getRootNamespace() . 'Models\\';
     }
 
     /**

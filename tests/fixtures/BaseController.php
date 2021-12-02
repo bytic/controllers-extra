@@ -10,5 +10,4 @@ use Nip\Controllers\Controller;
  */
 class BaseController extends Controller
 {
-
 }

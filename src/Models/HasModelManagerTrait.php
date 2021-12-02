@@ -59,7 +59,7 @@ trait HasModelManagerTrait
         } else {
             throw new Exception(
                 "invalid ModelManager name [$managerClass] 
-                for controller [".$this->getClassName()."]"
+                for controller [" . $this->getClassName() . "]"
             );
         }
     }

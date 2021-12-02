@@ -11,7 +11,6 @@ use Nip_Form_Model as Form;
  */
 trait HasForms
 {
-
     /**
      * @var Form[]
      */
@@ -52,5 +51,4 @@ trait HasForms
     {
         return $model->getForm($action);
     }
-
 }
