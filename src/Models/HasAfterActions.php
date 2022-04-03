@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ByTIC\Controllers\Behaviors\Models;
 
 use Nip\Records\AbstractModels\Record;
@@ -135,17 +137,17 @@ trait HasAfterActions
         $this->_flash[$key] = $value;
     }
 
+    /**
+     * @param $type
+     * @param $item
+     * @return mixed|string|null
+     */
     protected function afterActionUrlDefault($type, $item = null)
     {
         switch ($type) {
-            case 'add':
-            case 'duplicate':
-            case 'view':
-            case 'edit':
-                return $item->compileURL('view', Arr::only($this->getRequest()->query->all(), ['_format']));
             case 'delete':
                 return $this->getModelManager()->compileURL('index');
         }
-        return $this->getModelManager()->compileURL('index');
+        return $item->compileURL('view', Arr::only($this->getRequest()->query->all(), ['_format']));
     }
 }
