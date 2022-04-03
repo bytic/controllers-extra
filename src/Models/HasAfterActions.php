@@ -3,6 +3,8 @@
 namespace ByTIC\Controllers\Behaviors\Models;
 
 use Nip\Records\AbstractModels\Record;
+use Nip\Utility\Arr;
+use Nip\Utility\Url;
 
 /**
  * Trait HasAfterActions
@@ -40,7 +42,6 @@ trait HasAfterActions
      */
     protected function deleteRedirect($item)
     {
-        $this->setAfterUrlIfNotSet('after-delete', $this->getModelManager()->compileURL('index'));
         $this->afterActionRedirect('delete', $item);
     }
 
@@ -66,7 +67,10 @@ trait HasAfterActions
 
         $action_name = 'after-' . $type;
 
-        $url = $this->getAfterUrl($action_name, $item->getURL());
+        $url = $this->getAfterUrl(
+            $action_name,
+            $this->afterActionUrlDefault($type, $item)
+        );
         $flash_name = $this->getAfterFlashName($action_name, $this->getModelManager()->getController());
 
         return $this->flashRedirect($this->getModelManager()->getMessage($type), $url, 'success', $flash_name);
@@ -129,5 +133,19 @@ trait HasAfterActions
     protected function setAfterFlashName($key, $value = null)
     {
         $this->_flash[$key] = $value;
+    }
+
+    protected function afterActionUrlDefault($type, $item = null)
+    {
+        switch ($type) {
+            case 'add':
+            case 'duplicate':
+            case 'view':
+            case 'edit':
+                return $item->compileURL('view', Arr::only($this->getRequest()->query->all(), ['_format']));
+            case 'delete':
+                return $this->getModelManager()->compileURL('index');
+        }
+        return $this->getModelManager()->compileURL('index');
     }
 }
