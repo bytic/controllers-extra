@@ -40,6 +40,7 @@ trait HasAfterActions
      */
     protected function deleteRedirect($item)
     {
+        $this->setAfterUrlIfNotSet('after-delete', $this->getModelManager()->compileURL('index'));
         $this->afterActionRedirect('delete', $item);
     }
 
@@ -87,7 +88,7 @@ trait HasAfterActions
      */
     protected function setAfterUrlFlash($url, $flash, $types = null)
     {
-        $types = $types ? $types : $this->afterActionsTypes;
+        $types = $types ?: $this->afterActionsTypes;
         foreach ($types as $type) {
             $this->setAfterUrl($type, $url);
             $this->setAfterFlashName($type, $flash);
@@ -101,6 +102,14 @@ trait HasAfterActions
     protected function setAfterUrl($key, $value = null)
     {
         $this->_urls[$key] = $value;
+    }
+
+    protected function setAfterUrlIfNotSet($key, $value = null)
+    {
+        if (isset($this->_urls[$key])) {
+            return;
+        }
+        $this->setAfterUrl($key, $value);
     }
 
     /**
