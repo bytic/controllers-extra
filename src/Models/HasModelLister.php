@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ByTIC\Controllers\Behaviors\Models;
 
 use Nip\Database\Query\Select as SelectQuery;
@@ -26,29 +28,21 @@ trait HasModelLister
     {
         $query = $this->newIndexQuery();
         $filters = $this->getRequestFilters();
+
+        $this->indexPreparePaginator($filters);
+
         $query = $this->getModelManager()->filter($query, $filters);
-
-        $pageNumber = intval($this->getRequest()->query->get('page', 1));
-        $itemsPerPage = $this->getRecordPaginator()->getItemsPerPage();
-
-        $this->getRecordPaginator()->setPage($pageNumber);
         $this->getRecordPaginator()->paginate($query);
 
         $items = $this->indexFindItems($query);
         $this->indexPrepareItems($items);
 
-        $this->getView()->with([
-            'filters' => $filters,
-            'filtersManager'  => $this->getModelManager()->getFilterManager(),
-            'title'  => $this->getModelManager()->getLabel('title')
-        ]);
-
-        $this->getView()->Paginator()->setPaginator($this->getRecordPaginator());
-        $this->getView()->Paginator()->setURL($this->getModelManager()->getURL(is_object($filters) ? $filters->toArray() : $filters));
-//        if ($pageNumber * $itemsPerPage < $this->recordLimit) {
-//        } else {
-//            $this->getView()->set('recordLimit', true);
-//        }
+        $this->payload()->with([
+                                   'items' => $items,
+                                   'filters' => $filters,
+                                   'filtersManager' => $this->getModelManager()->getFilterManager(),
+                                   'title' => $this->getModelManager()->getLabel('title')
+                               ]);
     }
 
     /**
@@ -79,7 +73,6 @@ trait HasModelLister
         $items = $this->getModelManager()->findByQuery($query);
         $this->getRecordPaginator()->count();
 
-        $this->getView()->set('items', $items);
 
         return $items;
     }
@@ -89,5 +82,28 @@ trait HasModelLister
      */
     protected function indexPrepareItems($items)
     {
+    }
+
+    /**
+     * @param $filters
+     * @return void
+     */
+    protected function indexPreparePaginator($filters)
+    {
+        $pageNumber = intval($this->getRequest()->query->get('page', 1));
+        $recordPaginator = $this->getRecordPaginator();
+        $recordPaginator->setPage($pageNumber);
+
+        $payloadPaginator = $this->getView()->Paginator();
+        $payloadPaginator->setPaginator($this->getRecordPaginator());
+        $payloadPaginator->setURL(
+            $this->getModelManager()->getURL(is_object($filters) ? $filters->toArray() : $filters)
+        );
+
+//        $itemsPerPage = $recordPaginator->getItemsPerPage();
+        //        if ($pageNumber * $itemsPerPage < $this->recordLimit) {
+//        } else {
+//            $this->payload()->set('recordLimit', true);
+//        }
     }
 }
