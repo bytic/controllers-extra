@@ -24,7 +24,7 @@ trait ResponseTrait
     public function __construct()
     {
         parent::__construct();
-        ini_set('html_errors', 0);
+        ini_set('html_errors', "0");
     }
 
     /**
