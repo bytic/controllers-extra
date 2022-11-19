@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ByTIC\Controllers\Behaviors\Async;
 
 use Nip\Http\Response\JsonResponse;
@@ -23,6 +25,90 @@ trait ResponseTrait
     {
         parent::__construct();
         ini_set('html_errors', 0);
+    }
+
+    /**
+     * @param $code
+     * @param bool $message
+     * @param array $params
+     */
+    protected function sendResponseCode($code, $message = false, $params = [])
+    {
+        $params['code'] = $code;
+        $type = 'error';
+        $messageGeneric = "";
+
+        switch ($code) {
+            case '400':
+                $messageGeneric = 'Bad Request';
+                break;
+            case '401':
+                $messageGeneric = 'Request missing api token';
+                break;
+            case '4011':
+                $messageGeneric = 'Invalid API Key';
+                break;
+            case '403':
+                $messageGeneric = 'You don\'t have permission for this resource';
+                break;
+            case '404':
+                $messageGeneric = 'Invalid API call';
+                break;
+            case '4041':
+                $messageGeneric = 'Requested item not found';
+                break;
+        }
+
+        $message = $message === false ? $messageGeneric : $message;
+
+        $this->sendResponseMessage($type, $message, $params);
+    }
+
+    /**
+     * @param bool $request
+     * @param bool $key
+     * @return \Nip\Records\AbstractModels\Record|void
+     */
+    protected function checkItem($request = false, $key = false)
+    {
+        $return = parent::checkItem($request, $key);
+        if ($return) {
+            $this->checkAccess($return);
+
+            return $return;
+        }
+
+        $this->dispatchAccessDeniedResponse();
+    }
+
+    /** @noinspection PhpUnusedParameterInspection
+     * @param $item
+     * @return bool
+     */
+    protected function checkAccess($item)
+    {
+        return true;
+    }
+
+    /** @noinspection PhpMissingParentCallCommonInspection
+     * @inheritdoc
+     */
+    protected function dispatchNotFoundResponse()
+    {
+        $this->sendResponseCode('4041');
+    }
+
+    /** @noinspection PhpMissingParentCallCommonInspection
+     * @inheritdoc
+     */
+    protected function dispatchAccessDeniedResponse()
+    {
+        $this->sendResponseCode('403');
+    }
+
+    protected function checkItemError()
+    {
+        $this->sendResponseCode('4041');
     }
 
     protected function afterAction()
