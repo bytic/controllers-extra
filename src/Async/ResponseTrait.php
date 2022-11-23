@@ -27,6 +27,13 @@ trait ResponseTrait
         ini_set('html_errors', "0");
     }
 
+    protected function sendParamErrorResponse($param, $message = false, $params = [])
+    {
+        $params['param'] = $param;
+        $message = $message ?: 'Missing required parameter: ' . $param;
+        return $this->sendResponseCode('400', $message, $params);
+    }
+
     /**
      * @param $code
      * @param bool $message
@@ -61,7 +68,7 @@ trait ResponseTrait
 
         $message = $message === false ? $messageGeneric : $message;
 
-        $this->sendResponseMessage($type, $message, $params);
+        return $this->sendResponseMessage($type, $message, $params);
     }
 
     /**
