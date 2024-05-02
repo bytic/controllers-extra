@@ -22,20 +22,20 @@
     }
   },
   "require": {
-    "php": "^7.2|^8.0",
-    "bytic/controllers": "^1.0",
-    "bytic/utility": "^1.0"
+    "php": "^8.0",
+    "bytic/controllers": "^1.0|^2.0",
+    "bytic/utility": "^1.0|^2.0"
   },
   "require-dev": {
     "bytic/phpqatools": "^1.0",
-    "bytic/dispatcher": "^0.9|^1.0",
-    "bytic/orm": "^0.9|^1.0",
-    "bytic/orm-filters": "^0.9|^1.0",
-    "bytic/models-smart-properties": "^0.9|^1.0",
-    "bytic/http": "^0.9|^1.0",
-    "bytic/router": "^0.9|^1.0",
-    "bytic/form": "^0.9|^1.0",
-    "bytic/view": "^0.9|^1.0"
+    "bytic/dispatcher": "^1.0|^2.0",
+    "bytic/orm": "^1.0|^2.0",
+    "bytic/orm-filters": "^1.0|^2.0",
+    "bytic/models-smart-properties": "^1.0|^2.0",
+    "bytic/http": "^1.0|^2.0",
+    "bytic/router": "^1.0|^2.0",
+    "bytic/form": "^1.0|^2.0",
+    "bytic/view": "^1.0|^2.0"
   },
   "prefer-stable": true,
   "minimum-stability": "dev",
