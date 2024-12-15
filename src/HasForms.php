@@ -50,7 +50,7 @@ trait HasForms
     public function getModelForm($model, $action = null)
     {
         $action = $action ?? $this->getAction();
-        $form = $this->generateModelFromFromController($model, $action);
+        $form = $this->generateModelFormByController($model, $action);
         if ($form) {
             return $form;
         }
@@ -58,10 +58,15 @@ trait HasForms
         return $form;
     }
 
-    protected function generateModelFromFromController($model, $action = null)
+    /**
+     * @param $model
+     * @param $action
+     * @return mixed|null
+     */
+    protected function generateModelFormByController($model, $action = null)
     {
         $action = $action ?? $this->getAction();
-        if (!method_exists($model, 'getModelFormClass')) {
+        if (!method_exists($this, 'getModelFormClass')) {
             return null;
         }
         $class = $this->getModelFormClass($model, $action);
