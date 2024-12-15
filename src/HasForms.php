@@ -49,6 +49,27 @@ trait HasForms
      */
     public function getModelForm($model, $action = null)
     {
-        return $model->getForm($action);
+        $action = $action ?? $this->getAction();
+        $form = $this->generateModelFromFromController($model, $action);
+        if ($form) {
+            return $form;
+        }
+        $form = $model->getForm($action);
+        return $form;
+    }
+
+    protected function generateModelFromFromController($model, $action = null)
+    {
+        $action = $action ?? $this->getAction();
+        if (!method_exists($model, 'getModelFormClass')) {
+            return null;
+        }
+        $class = $this->getModelFormClass($model, $action);
+        if (!class_exists($class)) {
+            return null;
+        }
+        $form = new $class();
+        $form->setModel($model);
+        return $form;
     }
 }
