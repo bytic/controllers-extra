@@ -2,7 +2,7 @@
 
 namespace ByTIC\Controllers\Behaviors;
 
-use ByTIC\Common\Records\Traits\HasForms\RecordTrait as HasFormsRecord;
+use ByTIC\Records\Behaviors\HasForms\HasFormsRecordTrait;
 use Nip_Form_Model as Form;
 
 /**
@@ -43,7 +43,7 @@ trait HasForms
     }
 
     /**
-     * @param HasFormsRecord $model
+     * @param HasFormsRecordTrait $model
      * @param null $action
      * @return Form
      */
@@ -54,8 +54,7 @@ trait HasForms
         if ($form) {
             return $form;
         }
-        $form = $model->getForm($action);
-        return $form;
+        return $this->generateModelFormByModel($model, $action);
     }
 
     /**
@@ -76,5 +75,16 @@ trait HasForms
         $form = new $class();
         $form->setModel($model);
         return $form;
+    }
+
+    protected function generateModelFormByModel($model, $action)
+    {
+        $action = $action ?? $this->getAction();
+        $class = $model->getManager()->getFormClassName($action);
+        if (class_exists($class)) {
+            return $model->getForm($action);
+        }
+
+        return $model->getForm('Details');
     }
 }
