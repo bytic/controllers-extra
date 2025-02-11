@@ -31,6 +31,7 @@
     "bytic/dispatcher": "^1.0|^2.0",
     "bytic/orm": "^1.0|^2.0",
     "bytic/orm-filters": "^1.0|^2.0",
+    "bytic/orm-behaviors": "^0.9|^1.0",
     "bytic/models-smart-properties": "^1.0|^2.0",
     "bytic/http": "^1.0|^2.0",
     "bytic/router": "^1.0|^2.0",
