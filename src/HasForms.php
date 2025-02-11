@@ -82,7 +82,9 @@ trait HasForms
         $action = $action ?? $this->getAction();
         $class = $model->getManager()->getFormClassName($action);
         if (class_exists($class)) {
-            return $model->getForm($action);
+            $form = new $class();
+            $form->setModel($model);
+            return $form;
         }
 
         return $model->getForm('Details');
