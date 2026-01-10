@@ -55,7 +55,7 @@ trait HasSmartProperty
         $value = $_GET[$name];
         $availableValues = $this->getModelManager()->getSmartPropertyValues($definitionName, 'name');
         if (in_array($value, $availableValues)) {
-            $item->updateSmartProperty($definitionName, $value);
+            $this->changeSmartPropertyValueUpdate($definitionName, $item, $value);
             $this->changeSmartPropertyRedirect($name, $item);
         } else {
             $redirect = $_SERVER['HTTP_REFERER'];
@@ -65,6 +65,17 @@ trait HasSmartProperty
                 'error'
             );
         }
+    }
+
+    /**
+     * @param $definitionName
+     * @param $item
+     * @param $value
+     * @return void
+     */
+    protected function changeSmartPropertyValueUpdate($definitionName, $item, $value)
+    {
+        $item->updateSmartProperty($definitionName, $value);
     }
 
     /**
